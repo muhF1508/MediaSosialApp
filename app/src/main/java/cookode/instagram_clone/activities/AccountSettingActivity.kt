@@ -7,7 +7,7 @@ import com.google.firebase.auth.FirebaseAuth
 import cookode.instagram_clone.R
 import kotlinx.android.synthetic.main.activity_setting_account.*
 
-class SettingAccountActivity : AppCompatActivity() {
+class AccountSettingActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,7 +17,7 @@ class SettingAccountActivity : AppCompatActivity() {
         logout_btn_setprofile.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
 
-            val intent = Intent(this@SettingAccountActivity, LoginActivity::class.java)
+            val intent = Intent(this@AccountSettingActivity, LoginActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)
             finish()

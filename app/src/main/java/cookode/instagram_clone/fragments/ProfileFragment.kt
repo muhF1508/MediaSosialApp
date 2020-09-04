@@ -17,7 +17,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.squareup.picasso.Picasso
 import cookode.instagram_clone.R
-import cookode.instagram_clone.activities.SettingAccountActivity
+import cookode.instagram_clone.activities.AccountSettingActivity
 import cookode.instagram_clone.adapters.MyImageAdapter
 import cookode.instagram_clone.models.Post
 import cookode.instagram_clone.models.User
@@ -51,7 +51,7 @@ class ProfileFragment : Fragment() {
             cekFollowAndFollowingButtonStatus()
         }
         viewProfile.btn_edit_account.setOnClickListener {
-            startActivity(Intent(context, SettingAccountActivity::class.java))
+            startActivity(Intent(context, AccountSettingActivity::class.java))
         }
 
         var recyclerViewUploadImages: RecyclerView? = null

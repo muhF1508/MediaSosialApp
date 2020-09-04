@@ -1,6 +1,7 @@
 package cookode.instagram_clone.adapters
 
 import android.content.Context
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -14,8 +15,13 @@ class MyImageAdapter(private val mContext: Context, mPost: List<Post>)
 
     private var mPost: List<Post>? = null
 
+    init {
+        this.mPost = mPost
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        TODO("Not yet implemented")
+        val view = LayoutInflater.from(mContext).inflate(R.layout.images_item_layout,parent,false)
+        return ViewHolder(view)
     }
 
     override fun getItemCount() = mPost!!.size

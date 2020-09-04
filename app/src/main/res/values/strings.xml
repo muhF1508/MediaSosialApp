@@ -41,7 +41,6 @@
     <string name="publish">Publish</string>
     <string name="change_image">Change Image</string>
     <string name="profile_name">Profile Name</string>
-    <string name="bio">Bio</string>
     <string name="logout">Logout</string>
     <string name="delete_account">Delete Account</string>
     <string name="comment_text">comment text</string>

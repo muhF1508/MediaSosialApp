@@ -1,7 +1,8 @@
-package cookode.instagram_clone
+package cookode.instagram_clone.activities
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import cookode.instagram_clone.R
 
 class CommentActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,11 +1,12 @@
-package cookode.instagram_clone
+package cookode.instagram_clone.activities
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import cookode.instagram_clone.R
 
-class SettingAccountActivity : AppCompatActivity() {
+class AddPostActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_setting_account)
+        setContentView(R.layout.activity_add_post)
     }
 }

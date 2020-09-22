@@ -1,5 +1,6 @@
 package cookode.instagram_clone.fragments
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -34,39 +35,54 @@ class ProfileFragment : Fragment() {
     var postListGrid: MutableList<Post>? = null
     var myImagesAdapter: MyImageAdapter? = null
 
+    @SuppressLint("SetTextI18n")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view =  inflater.inflate(R.layout.fragment_profile, container, false)
+        val view = inflater.inflate(R.layout.fragment_profile, container, false)
         firebaseUser = FirebaseAuth.getInstance().currentUser!!
-        val pref = context?.getSharedPreferences("PREFS", Context.MODE_PRIVATE)
 
-        if(pref != null){
-            this.profileId = pref?.getString("profileId","none")!!
+        val pref = context?.getSharedPreferences("PREFS", Context.MODE_PRIVATE)
+        if (pref != null) {
+            this.profileId = pref.getString("profileId", "none")!!
         }
+
+        val prefEdit = context?.getSharedPreferences("PREFS", Context.MODE_PRIVATE)?.edit()
+        prefEdit?.putString("profileId", firebaseUser.uid)
+        prefEdit?.apply()
 
         if (profileId == firebaseUser.uid) {
             view?.btn_edit_account?.text = "Edit Profile"
-        } else if (profileId != firebaseUser.uid){
+        } else if (profileId != firebaseUser.uid) {
             checkFollowerOrFollowingStatus()
         }
 
         val recyclerViewUploadImages: RecyclerView?
         recyclerViewUploadImages = view.findViewById(R.id.recyclerview_upload_picimage)
         recyclerViewUploadImages?.setHasFixedSize(true)
-        val linearLayoutManager = GridLayoutManager(context,3)
+        val linearLayoutManager = GridLayoutManager(context, 3)
         recyclerViewUploadImages?.layoutManager = linearLayoutManager
 
         postListGrid = ArrayList()
         myImagesAdapter = context?.let { MyImageAdapter(it, postListGrid as ArrayList<Post>) }
         recyclerViewUploadImages?.adapter = myImagesAdapter
 
+        getFollowers()
+        getFollowings()
+        userInfo()
+        myPost()
+
         view.btn_edit_account.setOnClickListener {
             val getButtonText = view?.btn_edit_account?.text.toString()
-            when{
-                getButtonText == "Edit Profile" -> startActivity(Intent(context,AccountSettingActivity::class.java))
+            when {
+                getButtonText == "Edit Profile" -> startActivity(
+                    Intent(
+                        context,
+                        AccountSettingActivity::class.java
+                    )
+                )
 
                 getButtonText == "Follow" -> {
                     firebaseUser.uid.let { it1 ->
@@ -75,7 +91,7 @@ class ProfileFragment : Fragment() {
                             .child("Following").child(profileId).setValue(true)
                     }
 
-                    firebaseUser?.uid.let { it1 ->
+                    firebaseUser.uid.let { it1 ->
                         FirebaseDatabase.getInstance().reference
                             .child("Follow").child(profileId)
                             .child("Followers").child(it1).setValue(true)
@@ -83,13 +99,13 @@ class ProfileFragment : Fragment() {
                 }
 
                 getButtonText == "Following" -> {
-                    firebaseUser?.uid.let { it1 ->
+                    firebaseUser.uid.let { it1 ->
                         FirebaseDatabase.getInstance().reference
                             .child("Follow").child(it1)
                             .child("Following").child(profileId).removeValue()
                     }
 
-                    firebaseUser?.uid.let { it1 ->
+                    firebaseUser.uid.let { it1 ->
                         FirebaseDatabase.getInstance().reference
                             .child("Follow").child(profileId)
                             .child("Followers").child(it1).removeValue()
@@ -99,99 +115,79 @@ class ProfileFragment : Fragment() {
 
         }
 
-        getFollowers()
-        getFollowings()
-        userInfo()
-        myPost()
-
         return view
     }
 
-    private fun checkFollowerOrFollowingStatus(){
-        val followingRef = firebaseUser.uid.let { it1 ->
+    private fun checkFollowerOrFollowingStatus() {
+
+        firebaseUser.uid.let { it1 ->
             FirebaseDatabase.getInstance().reference
                 .child("Follow").child(it1)
                 .child("Following")
-        }
+        }.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(p0: DataSnapshot) {
 
-        if (followingRef != null)
-        {
-            followingRef.addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(p0: DataSnapshot) {
-
-                    if (p0.child(profileId).exists())
-                    {
-                        view?.btn_edit_account?.text = "Following"
-                    } else {
-                        view?.btn_edit_account?.text = "Follow"
-                    }
+                if (p0.child(profileId).exists()) {
+                    view?.btn_edit_account?.text = "Following"
+                } else {
+                    view?.btn_edit_account?.text = "Follow"
                 }
+            }
 
-                override fun onCancelled(p0: DatabaseError) {
+            override fun onCancelled(p0: DatabaseError) {
 
-                }
-            })
-        }
+            }
+        })
     }
 
-    private fun getFollowers()
-    {
+    private fun getFollowers() {
         val followersRef = FirebaseDatabase.getInstance().reference
             .child("Follow").child(profileId)
             .child("Followers")
 
-        followersRef.addValueEventListener(object : ValueEventListener{
-            override fun onDataChange(p0: DataSnapshot)
-            {
-                if (p0.exists()){
+        followersRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(p0: DataSnapshot) {
+                if (p0.exists()) {
                     view?.txt_totalFollowers?.text = p0.childrenCount.toString()
                 }
             }
+
             override fun onCancelled(p0: DatabaseError) {
 
             }
         })
     }
 
-    private fun getFollowings()
-    {
+    private fun getFollowings() {
         val followersRef = FirebaseDatabase.getInstance().reference
-            //sesuai yang berada di firebase
             .child("Follow").child(profileId)
             .child("Following")
 
-        followersRef.addValueEventListener(object : ValueEventListener{
+        followersRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(p0: DataSnapshot) {
 
-                if (p0.exists()){
+                if (p0.exists()) {
                     view?.txt_totalFollowing?.text = p0.childrenCount.toString()
                 }
             }
+
             override fun onCancelled(p0: DatabaseError) {
 
             }
         })
     }
 
-    private fun myPost(){
-
+    private fun myPost() {
         val postRef = FirebaseDatabase.getInstance().reference.child("Posts")
-        postRef.addValueEventListener(object :ValueEventListener{
-
+        postRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(p0: DataSnapshot) {
-
-                if (p0.exists()){
-
+                if (p0.exists()) {
                     (postListGrid as ArrayList<Post>).clear()
-
-                    for (snapshot in p0.children){
+                    for (snapshot in p0.children) {
                         val post = snapshot.getValue(Post::class.java)
-                        if (post?.publisher.equals(profileId))
-                        {
+                        if (post?.publisher.equals(profileId)) {
                             (postListGrid as ArrayList<Post>).add(post!!)
                         }
-
-//                        postListGrid?.reverse()
                         Collections.reverse(postListGrid)
                         myImagesAdapter!!.notifyDataSetChanged()
                     }
@@ -204,16 +200,15 @@ class ProfileFragment : Fragment() {
         })
     }
 
-    private fun userInfo(){
-        val usersRef = FirebaseDatabase.getInstance().getReference()
+    private fun userInfo() {
+        val usersRef = FirebaseDatabase.getInstance().reference
             .child("Users").child(profileId)
 
-        usersRef.addValueEventListener(object : ValueEventListener{
+        usersRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(p0: DataSnapshot) {
 
-                if (p0.exists()){
+                if (p0.exists()) {
                     val user = p0.getValue<User>(User::class.java)
-
                     Picasso.get().load(user?.image).placeholder(R.drawable.profile)
                         .into(view?.profile_image_gbr_frag)
                     view?.profile_fragment_username?.text = user?.username
@@ -221,10 +216,10 @@ class ProfileFragment : Fragment() {
                     view?.txt_bio_profile?.text = user?.bio
                 }
             }
+
             override fun onCancelled(p0: DatabaseError) {
 
             }
         })
     }
-
 }
